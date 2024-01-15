@@ -1,0 +1,28 @@
+{
+  "name": "lazily",
+  "version": "1.0.0",
+  "description": "Generate builders for object initialization",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "scripts": {
+    "build": "npx tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "npx",
+    "typescript",
+    "ts"
+  ],
+  "author": "nickbar01234",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nickbar01234/lazily"
+  },
+  "license": "ISC",
+  "files": [
+    "dist/"
+  ],
+  "devDependencies": {
+    "typescript": "^5.3.3"
+  }
+}
