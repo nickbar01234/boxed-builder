@@ -2,8 +2,8 @@ export type Describe<T> = Pick<T, keyof T>;
 
 type Setter<T, S> = {
   [k in keyof Describe<T>]: (
-    arg: Describe<T>[k],
-    validate?: (shape: S) => void
+    arg: Describe<T>[k] | ((shape: S) => Describe<T>[k]),
+    validate?: (shape: Record<k, Describe<T>[k]> & S) => void
   ) => Omit<IBuilder<T, Record<k, Describe<T>[k]> & S>, "from">;
 };
 
@@ -31,5 +31,5 @@ type Optional<T> = Partial<Pick<T, UndefinedProperties<T>>> &
 export type IBuilder<T, S = {}> = {
   from: <U extends Partial<T>>(other: U) => Omit<IBuilder<T, U>, "from">;
 } & Setter<T, S> &
-  Getter<T> &
+  Getter<S> &
   (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});

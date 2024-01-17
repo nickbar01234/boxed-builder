@@ -1,4 +1,4 @@
-import { describe, expect, it, jest, beforeEach } from "@jest/globals";
+import { describe, expect, it } from "@jest/globals";
 import Builder from "./builder";
 import { Property } from "./decorator";
 
@@ -22,19 +22,27 @@ describe("Test Builder", () => {
     students!: Student[];
   }
 
-  const mockValidator = jest.fn((x: any) => {});
-
-  beforeEach(() => {
-    mockValidator.mockClear();
-  });
-
   it("Set and get value", () => {
     expect(Builder(Student).name("nickbar01234").name()).toBe("nickbar01234");
   });
 
   it("Set and validate", () => {
-    Builder(Student).name("nickbar01234", mockValidator);
-    expect(mockValidator).toBeCalledTimes(1);
+    expect(() =>
+      Builder(Student).age(-1, (shape) => {
+        if (shape.age == undefined || shape.age < 0) {
+          throw new Error();
+        }
+      })
+    ).toThrowError();
+  });
+
+  it("Set value with function", () => {
+    expect(
+      Builder(Student)
+        .name("nickbar01234")
+        .location((shape) => (shape.name === "nickbar01234" ? "Tufts" : ""))
+        .location()
+    ).toBe("Tufts");
   });
 
   it("Build partial from", () => {
@@ -42,7 +50,7 @@ describe("Test Builder", () => {
       Builder(Student)
         .from({ name: "nickbar01234", location: "Vietnam" })
         .build()
-    ).toStrictEqual({
+    ).toEqual({
       name: "nickbar01234",
       location: "Vietnam",
       age: undefined,
