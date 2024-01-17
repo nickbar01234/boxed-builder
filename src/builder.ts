@@ -25,7 +25,7 @@ const Build = <T>(clazz: Class<T>) => {
         typeof args[0] === "function" ? args[0].call(args[0], shape) : args[0];
 
       if (typeof args[1] === "function") {
-        args[1].call(shape);
+        args[1].call(args[1], shape);
       }
 
       return builder;
