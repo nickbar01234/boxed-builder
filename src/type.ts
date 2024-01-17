@@ -11,9 +11,25 @@ type Getter<T> = {
   [k in keyof Describe<T>]: () => Describe<T>[k];
 };
 
-type Property<T, S> = Setter<T, S> & Getter<T>;
+/**
+ * @link https://stackoverflow.com/questions/68257379/how-to-omit-optional-properties-from-type - Pick non-optional field
+ */
+type RequiredProperties<T> = {
+  [k in keyof T as T[k] extends Required<T>[k] ? k : never]: T[k];
+};
 
-export type IBuilder<T, S = Record<string, unknown>> = {
-  from: <U extends Partial<T>>(other: U) => Property<T, U>;
-} & Property<T, S> &
-  (S extends T ? { build: () => T } : {});
+type UndefinedProperties<T> = {
+  [k in keyof T]-?: undefined extends T[k] ? k : never;
+}[keyof T];
+
+/**
+ * @link https://stackoverflow.com/questions/56146819/typescript-how-to-transfrom-undefined-property-to-optional-property Transforming union with undefined to optional field
+ */
+type Optional<T> = Partial<Pick<T, UndefinedProperties<T>>> &
+  Pick<T, Exclude<keyof T, UndefinedProperties<T>>>;
+
+export type IBuilder<T, S = {}> = {
+  from: <U extends Partial<T>>(other: U) => Omit<IBuilder<T, U>, "from">;
+} & Setter<T, S> &
+  Getter<T> &
+  (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});
