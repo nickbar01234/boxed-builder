@@ -4,13 +4,14 @@
   "description": "Generate builders for object initialization",
   "main": "dist/index.js",
   "scripts": {
-    "build": "npx tsc",
+    "build": "rollup -c",
     "test": "jest"
   },
   "keywords": [
-    "npx",
     "typescript",
-    "ts"
+    "ts",
+    "builder",
+    "decorator"
   ],
   "author": "nickbar01234",
   "repository": {
@@ -32,6 +33,8 @@
     "@jest/globals": "^29.7.0",
     "babel-jest": "^29.7.0",
     "jest": "^29.7.0",
+    "rollup": "^4.9.5",
+    "rollup-plugin-typescript2": "^0.36.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   }
