@@ -1,6 +1,6 @@
 # Boxed-Builder
 
-An opionated TypeScript POJO builder.
+An opinionated TypeScript POJO builder.
 
 ## Motivation
 
