@@ -1,1 +1,1 @@
-#!/usr/bin/env node
+export * as Lazily from "./type";
