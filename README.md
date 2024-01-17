@@ -1,84 +1,156 @@
 # Lazily
 
+An opionated TypeScript POJO builder.
+
 ## Motivation
 
-Suppose your program needs to fully initialize an object before performing
-an action.
+Often times, it's not possible (or ideal) to initialize all the required fields that
+describe an interface. For example,
+
+1. Your application listens to incoming requests for data.
+2. The code is "cleaner" if initialization is separated into multiple steps.
+
+In TypeScript land, we usually hack around this problem using the keyword `as`
+or default values. However, both approaches are prone to costly runtime exceptions;
+i.e, the program inadvertently uses a field that has not been initialized.
+
+Instead, you can utilize **Lazily** to generate a typesafe object builder. With
+**Lazily**, you define a class (instead of an interface) to describe your object.
 
 ```ts
-interface GoogleDriveApi {
-  nextPageToken: string;
-  fileIds: string[];
+import { Builder, Property } from "./lazily";
+
+class Shop {
+  @Property
+  name!: string;
+
+  @Property
+  open!: boolean;
+
+  @Property
+  stock!: number;
+
+  @Property
+  revenue!: number | undefined;
 }
 
-interface DropBoxApi {
-  cursor: string;
-  fileIds: string[];
-}
+const shop = Builder(Student)
+  .name("Foo")
+  .open(true)
+  .stock(100)
+  .revenue(0)
+  .build();
 
-interface Application {
-  version: number;
-  gdrive: GoogleDriveApi;
-  dropbox: DropBoxApi;
-}
+console.log(student); // { name: "Foo", open: true, stock: 100 }
 ```
 
-In this small example, you can make 2 separate API calls before initializing
-the object. But it's also possible that
+To avoid using code generation or [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy), **Lazily** reads the properties
+from `Shop` to construct the builder. By JavaScript design, class properties
+do not exist until they are assigned to. Therefore, you will **need to**
+add `@Property` decorator in order for the builder to work correctly.
 
-1. `Application` contains many more fields; in which case, the code may look
-   cleaner if the object is incrementally initialized.
-2. The application is listening to incoming requests, so not all the data is available.
+## Installation
 
-Traditionally, incremental initialization can be done using the keyword `as` or
-default values. However, both operations are prone to costly runtime exceptions
-if the program later uses a field when it has not been fully initialized.
-
-Instead, you can generate builders with **Lazily** to construct objects
-in a typesafe way. **Lazily** will target interfaces that is marked with
-`@lazily`.
-
-```ts
-// ...
-
-/**
- * @lazily
- */
-interface Application {
-  version: number;
-  gdrive: GoogleDriveApi;
-  dropbox: DropBoxApi;
-}
-```
-
-Running `npx lazily **/*.ts` on the terminal will output `ApplicationBuilder`
-class in `node_modules/lazily/index.ts`.
-
-## Command Line
+Install with `npm`, `yarn`, or `pnpm`.
 
 ```sh
-npx lazily src [--staged] [--output path] [--help]
+npm install lazily
+yarn install lazily
+pnpm install lazily
 ```
 
-- `src`: Path to the target source folder or file. This argument also accepts
-  glob patterns. For example, `**/*.ts` to parse all typescript files; `**/*{.d.ts, .type.ts}` to parse all files that ends with `.d.ts` and `.type.ts`.
+## API
 
-- `--staged`: Specifies whether the output should be staged builders. The
-  preprocessor defaults to a regular builder pattern and will throw runtime
-  error if not all fields are instantiated when the object is built. This option
-  can be overriden per interface declaration.
+### Setter
 
-- `--output`: Target destination for generated code. If no path is given, the
-  default output is `node_modules/lazily/index.ts`.
+#### Updating Value
 
-- `--help`: Shows help menu.
+For each property in your POJO, the builder exposes a setter method that accepts
+a new value that matches the described type.
+
+```ts
+Builder(Shop).location("Wonderland"); // Type error - Property 'location' does not exist...
+
+Builder(Shop).open("true"); // Type error - "true" cannot be assigned to boolean
+Builder(Shop).open(false); // Returns a builder
+```
+
+Alternatively, the builder accepts a callback to set the new value. The callback
+takes in the object with properties that have been initialized. This is useful
+if you want to set value conditionally.
+
+```ts
+Builder(Shop)
+  .open(false)
+  .stock((shape) => {
+    return shape.open ? 100 : 0;
+  });
+```
+
+#### Validating
+
+To validate that the new value is sensible w.r.t properties that have been
+set, pass a callback validation as a second parameter to the setter. The callback
+takes in the object with properties that have been initialized.
+
+```ts
+Builder(Shop)
+  .stock(0)
+  .open(true, (shape) => {
+    if (shape.open && shape.stock <= 0) {
+      throw new Error("Can't open shop with no items");
+    }
+  });
+```
+
+### Getter
+
+For each property that **has been set**, the builder exposes a getter method
+that returns the value.
+
+```ts
+Builder(Shop).open(false).open(); // false
+```
+
+**Lazily** purposefully only expose getters for properties that have been
+initialized to prevent accessing `undefined` values inadvertently.
+
+## Merge
+
+After creating a new Builder, you can optionally initialize it with another
+object, using a shallow merge. Note that **Lazily** only allows you to merge
+when no values are initialized; i.e, you can't merge after using a `setter` or
+initialization.
+
+```ts
+Builder(Shop)
+  .merge({ open: true })
+  .stock(100, (shape) => {
+    if (shape.open && shape.stock <= 0) {
+      throw new Error("Can't open shop with no items");
+    }
+  });
+```
+
+### Build
+
+By design, **Lazily** exposes a **strict builder**. This means that `.build()`
+will not be exposed until all the required properties are initialized. A property
+is considered optional if its type can be `undefined`.
+
+```ts
+Builder(Shop).build(); // Type error - Property 'build' does not exist...
+
+Builder(Shop).name("Foo").open(true).stock(100).build(); // Ok since revenue has type number | undefined
+```
+
+## Under The Hood
+
+**Lazily** uses conditional typing to enforce what methods are available to the
+client. However, it's possible to gain access to all the available API by
+downcasting and inspecting the builder object.
 
 ## Road Map
 
-- [ ] Default builders
-- [ ] Staged builders
-- [ ] Generics
-- [ ] Extend
-- [ ] Type
-- [ ] Pick / Omit
-- [ ] Script to setup custom JSDoc tag
+- [x] Strict builder
+- [ ] Staged builder
