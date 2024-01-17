@@ -1,1 +1,3 @@
-export * as Lazily from "./type";
+export default "./builder";
+export * from "./decorator";
+export * from "./type";
