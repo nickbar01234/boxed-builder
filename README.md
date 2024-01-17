@@ -1,4 +1,4 @@
-# Lazily
+# Boxed-Builder
 
 An opionated TypeScript POJO builder.
 
@@ -14,11 +14,11 @@ In TypeScript land, we usually hack around this problem using the keyword `as`
 or default values. However, both approaches are prone to costly runtime exceptions;
 i.e, the program inadvertently uses a field that has not been initialized.
 
-Instead, you can utilize **Lazily** to generate a typesafe object builder. With
-**Lazily**, you define a class (instead of an interface) to describe your object.
+Instead, you can utilize **Boxed-Builder** to generate a typesafe object builder. With
+**Boxed-Builder**, you define a class (instead of an interface) to describe your object.
 
 ```ts
-import { Builder, Property } from "./lazily";
+import { Builder, Property } from "./boxed-builder";
 
 class Shop {
   @Property
@@ -44,19 +44,17 @@ const shop = Builder(Student)
 console.log(student); // { name: "Foo", open: true, stock: 100 }
 ```
 
-To avoid using code generation or [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy), **Lazily** reads the properties
-from `Shop` to construct the builder. By JavaScript design, class properties
-do not exist until they are assigned to. Therefore, you will **need to**
-add `@Property` decorator in order for the builder to work correctly.
+To avoid using code generation or [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy), the builder is created
+by reading the properties from `Shop`. By JavaScript design, class properties do not exist until they are assigned to. Therefore, you will **need to** add `@Property` decorator in order for the builder to work correctly.
 
 ## Installation
 
 Install with `npm`, `yarn`, or `pnpm`.
 
 ```sh
-npm install lazily
-yarn install lazily
-pnpm install lazily
+npm install boxed-builder
+yarn install boxed-builder
+pnpm install boxed-builder
 ```
 
 ## API
@@ -112,13 +110,13 @@ that returns the value.
 Builder(Shop).open(false).open(); // false
 ```
 
-**Lazily** purposefully only expose getters for properties that have been
+**Boxed-Builder** only exposes getters for properties that have been
 initialized to prevent accessing `undefined` values inadvertently.
 
-## Merge
+### Merge
 
-After creating a new Builder, you can optionally initialize it with another
-object, using a shallow merge. Note that **Lazily** only allows you to merge
+After creating a new builder, you can optionally initialize it with another
+object, using a shallow merge. Note that the builder only allows you to merge
 when no values are initialized; i.e, you can't merge after using a `setter` or
 initialization.
 
@@ -134,7 +132,7 @@ Builder(Shop)
 
 ### Build
 
-By design, **Lazily** exposes a **strict builder**. This means that `.build()`
+By design, the builder is **strict**. This means that `.build()`
 will not be exposed until all the required properties are initialized. A property
 is considered optional if its type can be `undefined`.
 
@@ -144,9 +142,19 @@ Builder(Shop).build(); // Type error - Property 'build' does not exist...
 Builder(Shop).name("Foo").open(true).stock(100).build(); // Ok since revenue has type number | undefined
 ```
 
+### Type Utility
+
+You can convert a class to a type with `Describe`.
+
+```ts
+import { Describe } from "./boxed-builder";
+
+type IStudent = Describe<Student>;
+```
+
 ## Under The Hood
 
-**Lazily** uses conditional typing to enforce what methods are available to the
+**Boxed-Builder** uses conditional typing to enforce what methods are available to the
 client. However, it's possible to gain access to all the available API by
 downcasting and inspecting the builder object.
 

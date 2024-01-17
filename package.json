@@ -1,5 +1,5 @@
 {
-  "name": "lazily",
+  "name": "boxed-builder",
   "version": "1.0.0",
   "description": "Generate builders for object initialization",
   "main": "dist/index.js",
