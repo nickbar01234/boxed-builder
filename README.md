@@ -34,14 +34,14 @@ class Shop {
   revenue!: number | undefined;
 }
 
-const shop = Builder(Student)
+const shop = Builder(shop)
   .name("Foo")
   .open(true)
   .stock(100)
   .revenue(0)
   .build();
 
-console.log(student); // { name: "Foo", open: true, stock: 100 }
+console.log(shop); // { name: "Foo", open: true, stock: 100 }
 ```
 
 To avoid using code generation or [ES6 Proxy](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy), the builder is created
