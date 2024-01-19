@@ -2,7 +2,7 @@ import { IBuilder } from "./type";
 
 type Class<T> = new () => T;
 
-const Build = <T>(clazz: Class<T>) => {
+const Builder = <T>(clazz: Class<T>) => {
   const template = new clazz();
 
   let shape: Record<string, unknown> = {};
@@ -35,4 +35,4 @@ const Build = <T>(clazz: Class<T>) => {
   return builder as IBuilder<T>;
 };
 
-export default Build;
+export default Builder;
