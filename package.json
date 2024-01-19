@@ -11,12 +11,13 @@
     "typescript",
     "ts",
     "builder",
+    "builder-pattern",
     "decorator"
   ],
   "author": "nickbar01234",
   "repository": {
     "type": "git",
-    "url": "https://github.com/nickbar01234/lazily"
+    "url": "https://github.com/nickbar01234/boxed-builder"
   },
   "license": "ISC",
   "files": [
