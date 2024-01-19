@@ -34,12 +34,7 @@ class Shop {
   revenue!: number | undefined;
 }
 
-const shop = Builder(shop)
-  .name("Foo")
-  .open(true)
-  .stock(100)
-  .revenue(0)
-  .build();
+const shop = Builder(shop).name("Foo").open(true).stock(100).revenue(0).build();
 
 console.log(shop); // { name: "Foo", open: true, stock: 100 }
 ```
@@ -149,7 +144,7 @@ You can convert a class to a type with `Describe`.
 ```ts
 import { Describe } from "./boxed-builder";
 
-type IStudent = Describe<Student>;
+type IShop = Describe<Shop>;
 ```
 
 ## Under The Hood
@@ -157,6 +152,10 @@ type IStudent = Describe<Student>;
 **Boxed-Builder** uses conditional typing to enforce what methods are available to the
 client. However, it's possible to gain access to all the available API by
 downcasting and inspecting the builder object.
+
+## Credit
+
+The types are inspired by [Vincent-Pang](https://github.com/Vincent-Pang/builder-pattern).
 
 ## Road Map
 
