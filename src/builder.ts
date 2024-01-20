@@ -30,12 +30,15 @@ const Builder = <T>(clazz: Class<T>) => {
     };
   });
 
-  return builder as IBuilder<T>;
+  return builder;
 };
 
-const StagedBuilder = <T, K extends Array<keyof T>>(clazz: Class<T>) => {
-  return Builder(clazz) as unknown as IStagedBuilder<T, K>;
+const Boxed = <T>(clazz: Class<T>) => {
+  return {
+    Builder: () => Builder(clazz) as IBuilder<T>,
+    StagedBuilder: <K extends Array<keyof T>>() =>
+      Builder(clazz) as IStagedBuilder<T, K>,
+  };
 };
 
-export default Builder;
-export { StagedBuilder };
+export default Boxed;
