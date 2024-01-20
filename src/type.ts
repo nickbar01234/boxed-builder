@@ -29,7 +29,7 @@ type UndefinedProperties<T> = {
 type Optional<T> = Partial<Pick<T, UndefinedProperties<T>>> &
   Pick<T, Exclude<keyof T, UndefinedProperties<T>>>;
 
-export type IBuilder<T, S = {}> = {
+export type IBuilder<T, S extends Record<string, any> = {}> = {
   from: <U extends Partial<T>>(other: U) => Omit<IBuilder<T, U>, "from">;
 } & Setter<T, S> &
   Getter<S> &
@@ -50,20 +50,30 @@ type StagedBuilderSetter<T, K extends Array<keyof T>, S> = Record<
     arg: Describe<T>[K[0]] | ((shape: S) => Describe<T>[K[0]]),
     validate?: (shape: Record<K[0], Describe<T>[K[0]]> & S) => void
   ) => Omit<
-    IStagedBuilder<T, Rest<K>, Record<K[0], Describe<T>[K[0]] & S>>,
+    IStagedBuilder<T, Rest<K>, Record<K[0], Describe<T>[K[0]]> & S>,
     "from"
   >
 >;
 
-export type IStagedBuilder<
+type _IStagedBuilder<
   T,
-  K extends Array<keyof T> = [],
-  S = {}
+  K extends Array<keyof T>,
+  S extends Record<string, any>
 > = K extends []
-  ? Omit<IBuilder<Omit<T, keyof S>, S>, "from">
+  ? Omit<IBuilder<T, S>, "from">
   : {
       from: <U extends Partial<T>>(
         other: U
       ) => Omit<IStagedBuilder<T, Filter<T, K>, U>, "from">;
     } & Getter<S> &
       StagedBuilderSetter<T, K, S>;
+
+/**
+ * Need a wrapper over _IStagedBuilder in the case that client passes an empty
+ * stage array, in which case we don't need to omit from.
+ */
+export type IStagedBuilder<
+  T,
+  K extends Array<keyof T> = [],
+  S extends Record<string, any> = {}
+> = K extends [] ? IBuilder<T, S> : _IStagedBuilder<T, K, S>;
