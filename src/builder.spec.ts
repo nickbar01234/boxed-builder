@@ -82,4 +82,17 @@ describe("Test Staged Builder", () => {
       students: [],
     });
   });
+
+  it("Build partial stages", () => {
+    expect(
+      Boxed(Student)
+        .StagedBuilder<["name", "location"]>()
+        .setName("nickbar01234")
+        .setLocation("MA")
+        .build()
+    ).toStrictEqual({
+      name: "nickbar01234",
+      location: "MA",
+    });
+  });
 });
