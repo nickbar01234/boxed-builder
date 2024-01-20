@@ -23,12 +23,14 @@ describe("Test Builder", () => {
   }
 
   it("Set and get value", () => {
-    expect(Builder(Student).name("nickbar01234").name()).toBe("nickbar01234");
+    expect(Builder(Student).setName("nickbar01234").getName()).toBe(
+      "nickbar01234"
+    );
   });
 
   it("Set and validate", () => {
     expect(() =>
-      Builder(Student).age(-1, (shape) => {
+      Builder(Student).setAge(-1, (shape) => {
         if (shape.age == undefined || shape.age < 0) {
           throw new Error();
         }
@@ -39,9 +41,9 @@ describe("Test Builder", () => {
   it("Set value with function", () => {
     expect(
       Builder(Student)
-        .name("nickbar01234")
-        .location((shape) => (shape.name === "nickbar01234" ? "Tufts" : ""))
-        .location()
+        .setName("nickbar01234")
+        .setLocation((shape) => (shape.name === "nickbar01234" ? "Tufts" : ""))
+        .getLocation()
     ).toBe("Tufts");
   });
 

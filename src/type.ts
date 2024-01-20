@@ -1,14 +1,15 @@
 export type Describe<T> = Pick<T, keyof T>;
 
 type Setter<T, S> = {
-  [k in keyof Describe<T>]: (
+  [k in keyof Describe<T> & string as `set${Capitalize<k>}`]: (
     arg: Describe<T>[k] | ((shape: S) => Describe<T>[k]),
     validate?: (shape: Record<k, Describe<T>[k]> & S) => void
   ) => Omit<IBuilder<T, Record<k, Describe<T>[k]> & S>, "from">;
 };
 
 type Getter<T> = {
-  [k in keyof Describe<T>]: () => Describe<T>[k];
+  [k in keyof Describe<T> &
+    string as `get${Capitalize<k>}`]: () => Describe<T>[k];
 };
 
 /**
@@ -33,3 +34,36 @@ export type IBuilder<T, S = {}> = {
 } & Setter<T, S> &
   Getter<S> &
   (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});
+
+type Rest<T extends unknown[]> = T extends [unknown, ...infer R] ? R : [];
+
+// Extract out all values in K that's in T
+type Filter<T, K extends any[]> = K extends []
+  ? []
+  : K[0] extends keyof T
+  ? Filter<T, Rest<K>>
+  : [K[0], ...Rest<K>];
+
+type StagedBuilderSetter<T, K extends Array<keyof T>, S> = Record<
+  `set${Capitalize<K[0] & string>}`,
+  (
+    arg: Describe<T>[K[0]] | ((shape: S) => Describe<T>[K[0]]),
+    validate?: (shape: Record<K[0], Describe<T>[K[0]]> & S) => void
+  ) => Omit<
+    IStagedBuilder<T, Rest<K>, Record<K[0], Describe<T>[K[0]] & S>>,
+    "from"
+  >
+>;
+
+export type IStagedBuilder<
+  T,
+  K extends Array<keyof T> = [],
+  S = {}
+> = K extends []
+  ? Omit<IBuilder<Omit<T, keyof S>, S>, "from">
+  : {
+      from: <U extends Partial<T>>(
+        other: U
+      ) => Omit<IStagedBuilder<T, Filter<T, K>, U>, "from">;
+    } & Getter<S> &
+      StagedBuilderSetter<T, K, S>;

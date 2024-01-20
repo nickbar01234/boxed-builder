@@ -1,4 +1,4 @@
-import { IBuilder } from "./type";
+import { IBuilder, IStagedBuilder } from "./type";
 
 type Class<T> = new () => T;
 
@@ -16,18 +16,16 @@ const Builder = <T>(clazz: Class<T>) => {
   builder["build"] = () => shape;
 
   Object.getOwnPropertyNames(template).forEach((property) => {
-    builder[property] = (...args: unknown[]) => {
-      if (args.length === 0) {
-        return shape[property];
+    const key = property.charAt(0).toUpperCase() + property.slice(1);
+    builder[`get${key}`] = () => {
+      return shape[property];
+    };
+
+    builder[`set${key}`] = (arg: any, validate?: Function) => {
+      shape[property] = typeof arg === "function" ? arg.call(arg, shape) : arg;
+      if (validate != undefined) {
+        validate.call(validate, shape);
       }
-
-      shape[property] =
-        typeof args[0] === "function" ? args[0].call(args[0], shape) : args[0];
-
-      if (typeof args[1] === "function") {
-        args[1].call(args[1], shape);
-      }
-
       return builder;
     };
   });
@@ -35,4 +33,9 @@ const Builder = <T>(clazz: Class<T>) => {
   return builder as IBuilder<T>;
 };
 
+const StagedBuilder = <T, K extends Array<keyof T>>(clazz: Class<T>) => {
+  return Builder(clazz) as unknown as IStagedBuilder<T, K>;
+};
+
 export default Builder;
+export { StagedBuilder };
