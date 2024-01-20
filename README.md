@@ -187,10 +187,6 @@ those values.
 client. However, it's possible to gain access to all the available API by
 downcasting and inspecting the builder object.
 
-## Credit
-
-The types are inspired by [Vincent-Pang].
-
 ## Road Map
 
 - [x] Strict builder
