@@ -61,18 +61,17 @@ pnpm install boxed-builder
 
 ## API
 
-Out of the "box", `Box(clazz)` offers several **strict** builders with different
-initialization pattern. This means that an object can only be built if all
-the "required fields" are initalized. A field is non-required if its type can be
-`undefined`.
+Out of the "box", `Box(clazz)` offers several **strict** builders. This means
+that an object can only be built if all the "required fields" are initalized. A
+field is non-required if its type can be `undefined`.
+
+The builders differ in initialization pattern, but conform to the same API
+specification (described in the next section).
 
 | Builder                                                    | Description                                                                       |
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `Box(clazz).Builder()`                                     | The most flexible builder type that has no constraints on how properties are set. |
 | `Box(clazz).StagedBuilder<K extends Array<keyof clazz>>()` | Requires properties to be set in the order specified by K.                        |
-
-The specification is the same for different builders. The next section will
-describe the API using `Builder()`.
 
 ### Specification
 
@@ -129,18 +128,16 @@ Boxed(Shop).Builder().getOpen(); // Type error - Property 'getOpen' does not exi
 Boxed(Shop).Builder().setOpen(false).getOpen(); // false
 ```
 
-#### Merge
+#### From
 
-You can partially initalize the object using `merge()`.
-`merge()` allows a partial initialization of an object
-The builder can be partially initalized with another object, using a shallow merge.
-Note that the builder only exposes `merge()` on a fresh builder instance; i.e,
-you can't merge an object that has already been initalized.
+You can partially initialize the values using `from(other)`. Note that the
+builder only exposes `from()` on a fresh instance; i.e, you can't call `from()`
+on a builder instance that has fields set.
 
 ```ts
 Boxed(Shop)
   .Builder()
-  .merge({ open: true })
+  .from({ open: true })
   .setStock(100, (shape) => {
     if (shape.open && shape.stock <= 0) {
       throw new Error("Can't open shop with no items");
@@ -178,7 +175,7 @@ When all the properties in `K` have been set, a `StagedBuilder` converts to
 a regular builder.
 
 Note that `StagedBuilder` only allows forward initalization on values in `K`.
-This means that if you call `merge()` with properties in `K`, you can't re-initialize
+This means that if you call `from()` with properties in `K`, you can't re-initialize
 those values.
 
 ## Under The Hood
