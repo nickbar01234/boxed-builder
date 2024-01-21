@@ -1,6 +1,7 @@
 import { describe, expect, it } from "@jest/globals";
 import Boxed from "./builder";
 import { Property } from "./decorator";
+
 class Student {
   @Property
   name!: string;
@@ -94,5 +95,17 @@ describe("Test Staged Builder", () => {
       name: "nickbar01234",
       location: "MA",
     });
+  });
+});
+
+describe("Test Forward Builder", () => {
+  it("Build all properties", () => {
+    expect(
+      Boxed(Student)
+        .ForwardBuilder()
+        .setLocation("MA")
+        .setName("nickbar01234")
+        .build()
+    ).toStrictEqual({ name: "nickbar01234", location: "MA" });
   });
 });

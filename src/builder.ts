@@ -1,4 +1,4 @@
-import { IBuilder, IStagedBuilder } from "./type";
+import { IBuilder, IForwardBuilder, IStagedBuilder } from "./type";
 
 type Class<T> = new () => T;
 
@@ -38,6 +38,7 @@ const Boxed = <T>(clazz: Class<T>) => {
     Builder: () => Builder(clazz) as IBuilder<T>,
     StagedBuilder: <K extends Array<keyof T>>() =>
       Builder(clazz) as IStagedBuilder<T, K>,
+    ForwardBuilder: () => Builder(clazz) as IForwardBuilder<T>,
   };
 };
 

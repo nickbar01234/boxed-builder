@@ -1,6 +1,6 @@
 export type Describe<T> = Pick<T, keyof T>;
 
-type Setter<T, S> = {
+type BuilderSetter<T, S> = {
   [k in keyof Describe<T> & string as `set${Capitalize<k>}`]: (
     arg: Describe<T>[k] | ((shape: S) => Describe<T>[k]),
     validate?: (shape: Record<k, Describe<T>[k]> & S) => void
@@ -30,8 +30,10 @@ type Optional<T> = Partial<Pick<T, UndefinedProperties<T>>> &
   Pick<T, Exclude<keyof T, UndefinedProperties<T>>>;
 
 export type IBuilder<T, S extends Record<string, any> = {}> = {
-  from: <U extends Partial<T>>(other: U) => Omit<IBuilder<T, U>, "from">;
-} & Setter<T, S> &
+  from: <U extends Partial<T>>(
+    other: U
+  ) => Omit<IBuilder<T, RequiredProperties<U>>, "from">;
+} & BuilderSetter<T, S> &
   Getter<S> &
   (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});
 
@@ -64,7 +66,7 @@ type _IStagedBuilder<
   : {
       from: <U extends Partial<T>>(
         other: U
-      ) => Omit<IStagedBuilder<T, Filter<T, K>, U>, "from">;
+      ) => Omit<IStagedBuilder<T, Filter<T, K>, RequiredProperties<U>>, "from">;
     } & Getter<S> &
       StagedBuilderSetter<T, K, S>;
 
@@ -77,3 +79,18 @@ export type IStagedBuilder<
   K extends Array<keyof T> = [],
   S extends Record<string, any> = {}
 > = K extends [] ? IBuilder<T, S> : _IStagedBuilder<T, K, S>;
+
+type ForwardBuilderSetter<T, S> = {
+  [k in keyof Describe<T> & string as `set${Capitalize<k>}`]: (
+    arg: Describe<T>[k] | ((shape: S) => Describe<T>[k]),
+    validate?: (shape: Record<k, Describe<T>[k]> & S) => void
+  ) => Omit<IForwardBuilder<Omit<T, k>, Record<k, Describe<T>[k]> & S>, "from">;
+};
+
+export type IForwardBuilder<T, S extends Record<string, any> = {}> = {
+  from: <U extends Partial<T>>(
+    other: U
+  ) => Omit<IBuilder<Omit<T, keyof U>, RequiredProperties<U>>, "from">;
+} & ForwardBuilderSetter<T, S> &
+  Getter<S> &
+  (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});

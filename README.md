@@ -72,6 +72,7 @@ specification (described in the next section).
 | ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
 | `Box(clazz).Builder()`                                     | The most flexible builder type that has no constraints on how properties are set. |
 | `Box(clazz).StagedBuilder<K extends Array<keyof clazz>>()` | Requires properties to be set in the order specified by K.                        |
+| `Box(clazz).ForwardBuilder()`                              | Only allows forward initalization                                                 |
 
 ### Specification
 
@@ -178,6 +179,15 @@ Note that `StagedBuilder` only allows forward initalization on values in `K`.
 This means that if you call `from()` with properties in `K`, you can't re-initialize
 those values.
 
+### Forward Builder
+
+You can enforce that properties are only initialized once using
+`Boxed(clazz).ForwardBuilder()`.
+
+```ts
+Boxed(Shop).setLocation("Boston").setLocation("Boston"); // Type error - Property 'setLocation' does not exist...
+```
+
 ## Under The Hood
 
 **Boxed-Builder** uses conditional typing to enforce what methods are available to the
@@ -188,3 +198,4 @@ downcasting and inspecting the builder object.
 
 - [x] Strict builder
 - [x] Staged builder
+- [x] Forward builder
