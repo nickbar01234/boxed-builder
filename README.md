@@ -179,6 +179,14 @@ Note that `StagedBuilder` only allows forward initalization on values in `K`.
 This means that if you call `from()` with properties in `K`, you can't re-initialize
 those values.
 
+```ts
+Boxed(Shop).StagedBuilder<[]>(); // defaults to a regular builder
+
+Boxed(Shop).StagedBuilder<["name"]>().setLocation("MA"); // Type error - Property 'setLocation' does not exist...
+
+Boxed(Shop).StagedBuilder<["name"]>().setName("Foo"); // defaults to a regular builder after all stages are set
+```
+
 ### Forward Builder
 
 You can enforce that properties are only initialized once using
