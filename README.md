@@ -68,11 +68,11 @@ field is non-required if its type can be `undefined`.
 The builders differ in initialization pattern, but conform to the same API
 specification (described in the next section).
 
-| Builder                                                    | Description                                                                       |
-| ---------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `Box(clazz).Builder()`                                     | The most flexible builder type that has no constraints on how properties are set. |
-| `Box(clazz).StagedBuilder<K extends Array<keyof clazz>>()` | Requires properties to be set in the order specified by K.                        |
-| `Box(clazz).ForwardBuilder()`                              | Only allows forward initalization                                                 |
+| Builder                                                      | Description                                                                       |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------- |
+| `Boxed(clazz).Builder()`                                     | The most flexible builder type that has no constraints on how properties are set. |
+| `Boxed(clazz).StagedBuilder<K extends Array<keyof clazz>>()` | Requires properties to be set in the order specified by K.                        |
+| `Boxed(clazz).ForwardBuilder()`                              | Only allows forward initalization                                                 |
 
 ### Specification
 
@@ -152,9 +152,14 @@ The builder exposes `.build()` method when all the required fields are
 set. A field is non-required if its type can be `undefined`.
 
 ```ts
-Builder(Shop).build(); // Type error - Property 'build' does not exist...
+Boxed(shop).Builder().build(); // Type error - Property 'build' does not exist...
 
-const shop = Builder(Shop).setName("Foo").setOpen(true).setStock(100).build(); // Ok since revenue has type number | undefined
+const shop = Boxed(shop)
+  .Builder()
+  .setName("Foo")
+  .setOpen(true)
+  .setStock(100)
+  .build(); // Ok since revenue has type number | undefined
 
 console.log(shop); // { name: "Foo", open: true, stock: 100 }
 ```
