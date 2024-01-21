@@ -156,7 +156,7 @@ set. A field is non-required if its type can be `undefined`.
 ```ts
 Builder(Shop).build(); // Type error - Property 'build' does not exist...
 
-const shop = Builder(Shop).name("Foo").open(true).stock(100).build(); // Ok since revenue has type number | undefined
+const shop = Builder(Shop).setName("Foo").setOpen(true).setStock(100).build(); // Ok since revenue has type number | undefined
 
 console.log(shop); // { name: "Foo", open: true, stock: 100 }
 ```
