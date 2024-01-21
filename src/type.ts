@@ -1,15 +1,14 @@
 export type Describe<T> = Pick<T, keyof T>;
 
 type BuilderSetter<T, S> = {
-  [k in keyof Describe<T> & string as `set${Capitalize<k>}`]: (
-    arg: Describe<T>[k] | ((shape: S) => Describe<T>[k]),
-    validate?: (shape: Record<k, Describe<T>[k]> & S) => void
-  ) => Omit<IBuilder<T, Record<k, Describe<T>[k]> & S>, "from">;
+  [k in keyof T & string as `set${Capitalize<k>}`]: (
+    arg: T[k] | ((shape: S) => T[k]),
+    validate?: (shape: Record<k, T[k]> & S) => void
+  ) => Omit<IBuilder<T, Record<k, T[k]> & S>, "from">;
 };
 
 type Getter<T> = {
-  [k in keyof Describe<T> &
-    string as `get${Capitalize<k>}`]: () => Describe<T>[k];
+  [k in keyof T & string as `get${Capitalize<k>}`]: () => T[k];
 };
 
 /**
@@ -49,12 +48,9 @@ type Filter<T, K extends any[]> = K extends []
 type StagedBuilderSetter<T, K extends Array<keyof T>, S> = Record<
   `set${Capitalize<K[0] & string>}`,
   (
-    arg: Describe<T>[K[0]] | ((shape: S) => Describe<T>[K[0]]),
-    validate?: (shape: Record<K[0], Describe<T>[K[0]]> & S) => void
-  ) => Omit<
-    IStagedBuilder<T, Rest<K>, Record<K[0], Describe<T>[K[0]]> & S>,
-    "from"
-  >
+    arg: T[K[0]] | ((shape: S) => T[K[0]]),
+    validate?: (shape: Record<K[0], T[K[0]]> & S) => void
+  ) => Omit<IStagedBuilder<T, Rest<K>, Record<K[0], T[K[0]]> & S>, "from">
 >;
 
 type _IStagedBuilder<
@@ -81,10 +77,10 @@ export type IStagedBuilder<
 > = K extends [] ? IBuilder<T, S> : _IStagedBuilder<T, K, S>;
 
 type ForwardBuilderSetter<T, S> = {
-  [k in keyof Describe<T> & string as `set${Capitalize<k>}`]: (
-    arg: Describe<T>[k] | ((shape: S) => Describe<T>[k]),
-    validate?: (shape: Record<k, Describe<T>[k]> & S) => void
-  ) => Omit<IForwardBuilder<Omit<T, k>, Record<k, Describe<T>[k]> & S>, "from">;
+  [k in keyof T & string as `set${Capitalize<k>}`]: (
+    arg: T[k] | ((shape: S) => T[k]),
+    validate?: (shape: Record<k, T[k]> & S) => void
+  ) => Omit<IForwardBuilder<Omit<T, k>, Record<k, T[k]> & S>, "from">;
 };
 
 export type IForwardBuilder<T, S extends Record<string, any> = {}> = {
