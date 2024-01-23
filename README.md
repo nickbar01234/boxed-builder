@@ -36,10 +36,10 @@ class Shop {
 
 const shop = Boxed(Shop)
   .Builder()
-  .name("Foo")
-  .open(true)
-  .stock(100)
-  .revenue(0)
+  .setName("Foo")
+  .setOpen(true)
+  .setStock(100)
+  .setRevenue(0)
   .build();
 
 console.log(shop); // { name: "Foo", open: true, stock: 100, revenue: 0 }
