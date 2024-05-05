@@ -18,7 +18,7 @@ i.e, the program inadvertently uses a field that has not been initialized.
 Instead, you can utilize **Boxed-Builder** to generate typesafe builder for your project.
 
 ```ts
-import Boxed, { Property } from "./boxed-builder";
+import { Builder, Property } from "./boxed-builder";
 
 class Shop {
   @Property
@@ -34,7 +34,7 @@ class Shop {
   revenue!: number | undefined;
 }
 
-const shop = Boxed(Shop)
+const shop = Builder(Shop)
   .Builder()
   .setName("Foo")
   .setOpen(true)
@@ -68,11 +68,11 @@ field is non-required if its type can be `undefined`.
 The builders differ in initialization pattern, but conform to the same API
 specification (described in the next section).
 
-| Builder                                                      | Description                                                                       |
-| ------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `Boxed(clazz).Builder()`                                     | The most flexible builder type that has no constraints on how properties are set. |
-| `Boxed(clazz).StagedBuilder<K extends Array<keyof clazz>>()` | Requires properties to be set in the order specified by K.                        |
-| `Boxed(clazz).ForwardBuilder()`                              | Only allows forward initalization                                                 |
+| Builder                                                        | Description                                                                       |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `Builder(clazz).Builder()`                                     | The most flexible builder type that has no constraints on how properties are set. |
+| `Builder(clazz).StagedBuilder<K extends Array<keyof clazz>>()` | Requires properties to be set in the order specified by K.                        |
+| `Builder(clazz).ForwardBuilder()`                              | Only allows forward initalization                                                 |
 
 ### Specification
 
@@ -84,9 +84,9 @@ For each property `k` in your POJO, the builder exposes a setter method `set${k}
 to set the value for `k`. Note that the first character in `k` will be capitalized.
 
 ```ts
-Boxed(Shop).Builder().setLocation("Wonderland"); // Type error - Property 'setLocation' does not exist...
-Boxed(Shop).Builder().setOpen("true"); // Type error - "true" cannot be assigned to boolean
-Boxed(Shop).Builder().setOpen(false); // Returns a builder
+Builder(Shop).Builder().setLocation("Wonderland"); // Type error - Property 'setLocation' does not exist...
+Builder(Shop).Builder().setOpen("true"); // Type error - "true" cannot be assigned to boolean
+Builder(Shop).Builder().setOpen(false); // Returns a builder
 ```
 
 Alternatively, you can supply a callback for the setter. The callback accepts
@@ -94,7 +94,7 @@ an object with properties that have been initalized. This is useful
 if you want to set value conditionally.
 
 ```ts
-Boxed(Shop)
+Builder(Shop)
   .Builder()
   .setLocation(false)
   .setStock((shape) => {
@@ -108,7 +108,7 @@ The setter also takes an optional callback to validate that the new value is
 sensible. The callback accepts an object with properties that have been initialized.
 
 ```ts
-Boxed(Shop)
+Builder(Shop)
   .Builder()
   .setStock(0)
   .setOpen(true, (shape) => {
@@ -124,9 +124,9 @@ For each property `k` that **has been set**, the builder exposes a getter method
 `get${k}`. Note that the first character in `k` will be capitalized.
 
 ```ts
-Boxed(Shop).Builder().getOpen(); // Type error - Property 'getOpen' does not exist...
+Builder(Shop).Builder().getOpen(); // Type error - Property 'getOpen' does not exist...
 
-Boxed(Shop).Builder().setOpen(false).getOpen(); // false
+Builder(Shop).Builder().setOpen(false).getOpen(); // false
 ```
 
 #### From
@@ -136,7 +136,7 @@ builder only exposes `from()` on a fresh instance; i.e, you can't call `from()`
 on a builder instance that has fields set.
 
 ```ts
-Boxed(Shop)
+Builder(Shop)
   .Builder()
   .from({ open: true })
   .setStock(100, (shape) => {
@@ -152,9 +152,9 @@ The builder exposes `.build()` method when all the required fields are
 set. A field is non-required if its type can be `undefined`.
 
 ```ts
-Boxed(shop).Builder().build(); // Type error - Property 'build' does not exist...
+Builder(shop).Builder().build(); // Type error - Property 'build' does not exist...
 
-const shop = Boxed(shop)
+const shop = Builder(shop)
   .Builder()
   .setName("Foo")
   .setOpen(true)
@@ -176,7 +176,7 @@ type IShop = Describe<Shop>;
 
 ### Staged Builder
 
-You can enforce the initialization order using `Boxed(clazz).StagedBuilder<K extends Array<keyof clazz>>()`.
+You can enforce the initialization order using `Builder(clazz).StagedBuilder<K extends Array<keyof clazz>>()`.
 When all the properties in `K` have been set, a `StagedBuilder` converts to
 a regular builder.
 
@@ -185,20 +185,20 @@ This means that if you call `from()` with properties in `K`, you can't re-initia
 those values.
 
 ```ts
-Boxed(Shop).StagedBuilder<[]>(); // defaults to a regular builder
+Builder(Shop).StagedBuilder<[]>(); // defaults to a regular builder
 
-Boxed(Shop).StagedBuilder<["name"]>().setLocation("MA"); // Type error - Property 'setLocation' does not exist...
+Builder(Shop).StagedBuilder<["name"]>().setLocation("MA"); // Type error - Property 'setLocation' does not exist...
 
-Boxed(Shop).StagedBuilder<["name"]>().setName("Foo"); // defaults to a regular builder after all stages are set
+Builder(Shop).StagedBuilder<["name"]>().setName("Foo"); // defaults to a regular builder after all stages are set
 ```
 
 ### Forward Builder
 
 You can enforce that properties are only initialized once using
-`Boxed(clazz).ForwardBuilder()`.
+`Builder(clazz).ForwardBuilder()`.
 
 ```ts
-Boxed(Shop).setLocation("Boston").setLocation("Boston"); // Type error - Property 'setLocation' does not exist...
+Builder(Shop).setLocation("Boston").setLocation("Boston"); // Type error - Property 'setLocation' does not exist...
 ```
 
 ## Under The Hood

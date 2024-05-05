@@ -2,7 +2,7 @@ import { IBuilder, IForwardBuilder, IStagedBuilder } from "./type";
 
 type Class<T> = new () => T;
 
-const Builder = <T>(clazz: Class<T>) => {
+const _Builder = <T>(clazz: Class<T>) => {
   const template = new clazz();
 
   let shape: Record<string, unknown> = {};
@@ -33,13 +33,13 @@ const Builder = <T>(clazz: Class<T>) => {
   return builder;
 };
 
-const Boxed = <T>(clazz: Class<T>) => {
+const Builder = <T>(clazz: Class<T>) => {
   return {
-    Builder: () => Builder(clazz) as IBuilder<T>,
+    Builder: () => _Builder(clazz) as IBuilder<T>,
     StagedBuilder: <K extends Array<keyof T>>() =>
-      Builder(clazz) as IStagedBuilder<T, K>,
-    ForwardBuilder: () => Builder(clazz) as IForwardBuilder<T>,
+      _Builder(clazz) as IStagedBuilder<T, K>,
+    ForwardBuilder: () => _Builder(clazz) as IForwardBuilder<T>,
   };
 };
 
-export default Boxed;
+export default Builder;
