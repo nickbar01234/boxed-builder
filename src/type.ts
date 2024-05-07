@@ -90,3 +90,15 @@ export type IForwardBuilder<T, S extends Record<string, any> = {}> = {
 } & ForwardBuilderSetter<T, S> &
   Getter<S> &
   (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});
+
+export type Unary<T = any, U = any> = (t: T) => U;
+
+type PipeOutput<T extends Unary[]> = T extends []
+  ? any
+  : T extends [T[0]]
+  ? Awaited<ReturnType<T[0]>>
+  : PipeOutput<Rest<T>>;
+
+export type IPipe<T extends Unary[]> = {
+  o: <U extends Unary<PipeOutput<T>>>(fn: U) => IPipe<[...T, U]>;
+} & (T extends [] ? {} : Unary<Parameters<T[0]>[0], PipeOutput<T>>);
