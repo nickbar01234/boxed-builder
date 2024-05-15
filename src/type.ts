@@ -91,7 +91,11 @@ export type IForwardBuilder<T, S extends Record<string, any> = {}> = {
   Getter<S> &
   (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});
 
-export type Unary<T = any, U = any> = (t: T) => U;
+export type Unary<T = any> = (t: T) => any;
+
+export type VaradicUnary = (...t: any[]) => any;
+
+export type PipeFns = [VaradicUnary, ...Unary[]];
 
 type PipeOutput<T extends Unary[]> = T extends []
   ? any
@@ -99,6 +103,14 @@ type PipeOutput<T extends Unary[]> = T extends []
   ? Awaited<ReturnType<T[0]>>
   : PipeOutput<Rest<T>>;
 
-export type IPipe<T extends Unary[]> = {
+type HasPromises<T extends Unary[]> = T extends []
+  ? false
+  : ReturnType<T[0]> extends Promise<infer U>
+  ? true
+  : HasPromises<Rest<T>>;
+
+export type IPipe<T extends PipeFns> = {
   o: <U extends Unary<PipeOutput<T>>>(fn: U) => IPipe<[...T, U]>;
-} & (T extends [] ? {} : Unary<Parameters<T[0]>[0], PipeOutput<T>>);
+} & ((
+  ...t: Parameters<T[0]>
+) => HasPromises<T> extends true ? Promise<PipeOutput<T>> : PipeOutput<T>);
