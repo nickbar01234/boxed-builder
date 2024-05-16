@@ -1,5 +1,5 @@
 import { describe, expect, it } from "@jest/globals";
-import Boxed from "./builder";
+import Builder from "./builder";
 import { Property } from "./decorator";
 
 class Student {
@@ -23,14 +23,14 @@ class University {
 
 describe("Test Builder", () => {
   it("Set and get value", () => {
-    expect(Boxed(Student).Builder().setName("nickbar01234").getName()).toBe(
+    expect(Builder(Student).Builder().setName("nickbar01234").getName()).toBe(
       "nickbar01234"
     );
   });
 
   it("Set and validate", () => {
     expect(() =>
-      Boxed(Student)
+      Builder(Student)
         .Builder()
         .setAge(-1, (shape) => {
           if (shape.age == undefined || shape.age < 0) {
@@ -42,7 +42,7 @@ describe("Test Builder", () => {
 
   it("Set value with function", () => {
     expect(
-      Boxed(Student)
+      Builder(Student)
         .Builder()
         .setName("nickbar01234")
         .setLocation((shape) => (shape.name === "nickbar01234" ? "Tufts" : ""))
@@ -52,7 +52,7 @@ describe("Test Builder", () => {
 
   it("Build partial from", () => {
     expect(
-      Boxed(Student)
+      Builder(Student)
         .Builder()
         .from({ name: "nickbar01234", location: "Vietnam" })
         .build()
@@ -65,7 +65,7 @@ describe("Test Builder", () => {
 
   it("Build full from", () => {
     expect(
-      Boxed(University).Builder().from({ state: "MA", students: [] }).build()
+      Builder(University).Builder().from({ state: "MA", students: [] }).build()
     ).toStrictEqual({ state: "MA", students: [] });
   });
 });
@@ -73,7 +73,7 @@ describe("Test Builder", () => {
 describe("Test Staged Builder", () => {
   it("Build all stages", () => {
     expect(
-      Boxed(University)
+      Builder(University)
         .StagedBuilder<["state", "students"]>()
         .setState("MA")
         .setStudents([])
@@ -86,7 +86,7 @@ describe("Test Staged Builder", () => {
 
   it("Build partial stages", () => {
     expect(
-      Boxed(Student)
+      Builder(Student)
         .StagedBuilder<["name", "location"]>()
         .setName("nickbar01234")
         .setLocation("MA")
@@ -101,7 +101,7 @@ describe("Test Staged Builder", () => {
 describe("Test Forward Builder", () => {
   it("Build all properties", () => {
     expect(
-      Boxed(Student)
+      Builder(Student)
         .ForwardBuilder()
         .setLocation("MA")
         .setName("nickbar01234")
