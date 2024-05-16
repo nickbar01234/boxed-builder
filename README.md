@@ -1,9 +1,26 @@
 # Boxed-Builder
 
-Opionated TypeScript POJO builders, inspired by Vincent Pang's
+A library to provide typesafe and reusuable utilities.
+
+1. [Builder pattern](#builder-pattern)
+2. [Pipe pattern](#pipe-pattern)
+
+## Installation
+
+Install with `npm`, `yarn`, or `pnpm`.
+
+```sh
+npm install boxed-builder
+yarn install boxed-builder
+pnpm install boxed-builder
+```
+
+## Builder Pattern
+
+A typesafe POJO-like builder, inspired by Vincent Pang's
 [builder pattern](https://github.com/Vincent-Pang/builder-pattern).
 
-## Motivation
+### Motivation
 
 Often times, it's not possible (or ideal) to initialize all the required fields that
 describe an interface. For example,
@@ -15,7 +32,7 @@ In TypeScript land, we usually hack around this problem using the keyword `as`
 or default values. However, both approaches are prone to costly runtime exceptions;
 i.e, the program inadvertently uses a field that has not been initialized.
 
-Instead, you can utilize **Boxed-Builder** to generate typesafe builder for your project.
+Instead, you can utilize **Builder** to generate typesafe builder for your project.
 
 ```ts
 import { Builder, Property } from "./boxed-builder";
@@ -49,17 +66,7 @@ To avoid using code generation or [ES6 Proxy](https://developer.mozilla.org/en-U
 by reading the properties from `Shop`. You will **need to** add `@Property` decorator
 because class properties do not exist until they are assigned to.
 
-## Installation
-
-Install with `npm`, `yarn`, or `pnpm`.
-
-```sh
-npm install boxed-builder
-yarn install boxed-builder
-pnpm install boxed-builder
-```
-
-## API
+### API
 
 Out of the "box", `Box(clazz)` offers several **strict** builders. This means
 that an object can only be built if all the "required fields" are initalized. A
@@ -201,14 +208,111 @@ You can enforce that properties are only initialized once using
 Builder(Shop).setLocation("Boston").setLocation("Boston"); // Type error - Property 'setLocation' does not exist...
 ```
 
-## Under The Hood
+### Under The Hood
 
-**Boxed-Builder** uses conditional typing to enforce what methods are available to the
+**Builder** uses conditional typing to enforce what methods are available to the
 client. However, it's possible to gain access to all the available API by
 downcasting and inspecting the builder object.
 
-## Road Map
+## Pipe Pattern
 
-- [x] Strict builder
-- [x] Staged builder
-- [x] Forward builder
+A typesafe utility to compose functions, inspired by functional programming
+language.
+
+### Motivation
+
+In-line function calls are very common.
+
+```ts
+f(g(h(x)));
+```
+
+For longer function names and multiple function calls, tracing parentheses can
+be difficult. Using **Pipe** API,
+
+```ts
+import { Pipe } from "./boxed-builder";
+
+const pipe = Pipe(h).o(g).o(f);
+pipe(x); // f(g(h(x)))
+```
+
+The code `Pipe(h).o(g).o(f)` roughly translates to
+
+```ts
+(x) => {
+  let x1 = h(x);
+  let x2 = g(x1);
+  let x3 = f(x2);
+  return x3;
+};
+```
+
+### Specification
+
+A `Pipe` is an immutable list of unary functions. When a `Pipe` is called with
+a parameter, the functions are executed in the order they are added.
+
+#### Creating Pipe
+
+To create a `Pipe`
+
+```ts
+const isPositivePipe = Pipe((x: number) => x > 0);
+```
+
+To add more functions to the pipe, use the `.o(unary)` method
+
+```ts
+const isNotPositivePipe = isNotPositivePipe.o((x) => !x);
+```
+
+Calling `.o()` method returns a new `Pipe` instance.
+
+To execute the pipe, call it as you would with a function. The output type
+is inferred by typechecking the list of unary functions in order.
+
+```ts
+isNotPositivePipe(-10); // true
+```
+
+#### Type Checking
+
+The first function added to the `Pipe` can take any input. Any subsequent
+function takes the type returned by the previous function.
+
+```ts
+Pipe((x: number) => x * 10).o((y /* inferred as number */) => 10 + y)(1); // (1 * 10) + 10
+
+Pipe((x: number) => x > 0).o((y: number) => -1 * y); // Type error, number is not assignable to boolean
+
+Pipe((x: number) => x > 0)(true); // Type error
+```
+
+#### Asynchronous Function
+
+If a function returns a promise, the `Pipe` waits for the results before calling
+the next function. The output of the pipe will be a promise.
+
+```ts
+const x = await Pipe(async (x: number) => x + 1)(10); // 1
+```
+
+#### Terminating
+
+It may be useful to terminate the chain early; for example, when an error
+occurred. The unary functions can optionally take in a `terminate` function,
+which has type `(output?: any) => any`.
+
+```ts
+const output = Pipe((x: number, terminate) => {
+  if (x > 0) {
+    terminate("STOP");
+  }
+  return x * 2;
+}).o((x: number) => x + 1)(10);
+
+output; // STOP
+```
+
+Note that `output` is still inferred to be a number.
