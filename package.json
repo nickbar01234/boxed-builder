@@ -1,6 +1,6 @@
 {
   "name": "boxed-builder",
-  "version": "2.0.4",
+  "version": "2.0.5",
   "description": "Generate builders for object initialization",
   "main": "dist/index.js",
   "scripts": {
