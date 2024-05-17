@@ -91,10 +91,9 @@ export type IForwardBuilder<T, S extends Record<string, any> = {}> = {
   Getter<S> &
   (S extends RequiredProperties<Optional<T>> ? { build: () => T } : {});
 
-export type Unary<T = any, U = any> = (
-  t: T,
-  terminate: (output?: any) => any
-) => U;
+export type Terminate = (output?: any) => never;
+
+export type Unary<T = any, U = any> = (t: T, terminate: Terminate) => U;
 
 export type PipeFns = [Unary, ...Unary[]];
 

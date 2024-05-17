@@ -1,4 +1,4 @@
-import { IPipe, PipeFns, Unary } from "./type";
+import { IPipe, PipeFns, Terminate, Unary } from "./type";
 import { isPromise } from "./utils";
 
 const _Pipe = <T extends PipeFns>(fns: T) => {
@@ -9,9 +9,10 @@ const _Pipe = <T extends PipeFns>(fns: T) => {
     let terminated = false;
     let terminatedReason: any = undefined;
 
-    const terminate = (output?: any) => {
+    const terminate: Terminate = (output?: any) => {
       terminated = true;
       terminatedReason = output;
+      return undefined as never;
     };
 
     const resolveAsync = async <T extends Unary[]>(
