@@ -47,6 +47,18 @@ describe("Test Synchronous Pipe", () => {
   it("Type infer", () => {
     expect(Pipe(multiplyBy(5)).o((x) => x + 5)(1)).toBe(10);
   });
+
+  it("Test never", () => {
+    expect(
+      Pipe((student: { school: string | undefined }, terminate) => {
+        if (student.school == undefined) {
+          return terminate("");
+        }
+        // student.school should be inferred to string
+        return student.school === "Tufts";
+      })({ school: "Tufts" })
+    ).toBe("Tufts");
+  });
 });
 
 describe("Test Asynchronous Pipe", () => {

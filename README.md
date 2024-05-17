@@ -264,7 +264,7 @@ const isPositivePipe = Pipe((x: number) => x > 0);
 To add more functions to the pipe, use the `.o(unary)` method
 
 ```ts
-const isNotPositivePipe = isNotPositivePipe.o((x) => !x);
+const isNotPositivePipe = isPositivePipe.o((x) => !x);
 ```
 
 Calling `.o()` method returns a new `Pipe` instance.
@@ -302,17 +302,20 @@ const x = await Pipe(async (x: number) => x + 1)(10); // 1
 
 It may be useful to terminate the chain early; for example, when an error
 occurred. The unary functions can optionally take in a `terminate` function,
-which has type `(output?: any) => any`.
+which has type `(output?: any) => never`.
 
 ```ts
-const output = Pipe((x: number, terminate) => {
-  if (x > 0) {
-    terminate("STOP");
+const pipe = Pipe((student: { school: string | undefined }, terminate) => {
+  if (student.school == undefined) {
+    return terminate("STOP");
   }
-  return x * 2;
-}).o((x: number) => x + 1)(10);
+  // student.school is inferred to be string
+  return student.school === "Tufts";
+});
 
-output; // STOP
+pipe({ school: undefined }); // STOP
+pipe({ school: "Tufts" }); // true
 ```
 
-Note that `output` is still inferred to be a number.
+The parameter to `terminate` becomes the output of the pipe. This can be useful
+for error recovery.
